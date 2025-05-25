@@ -1,17 +1,24 @@
+import React, { useEffect, useState } from "react";
+
 export function AnalyzingStatusCard() {
     // TODO: 글로벌 스테이트로 분리 예정
     const userName = "준혁";
-    const carbonAmount = 3.2;
-    const progress = 10;
+    const targetProgress = 90;
+    const [progress, setProgress] = useState(0);
+
+    useEffect(() => {
+        // 마운트 시 한 번만 목표값으로 변경
+        setTimeout(() => setProgress(targetProgress), 100);
+    }, [targetProgress]);
 
     return (
         <div className="flex items-center bg-main-light rounded-2xl px-6 py-4 w-full">
             <div className="flex-1">
                 <div className="font-bold text-lg mb-1">
-                    {userName}님의 메일을 분석중입니다...
+                    {userName}님의 메일을 분석중입니다
                 </div>
-                <div className="text-gray-600 text-base">
-                    박{userName}님의 예상 탄소 절감량 : <span className="font-medium">{carbonAmount}g CO₂</span>
+                <div className="font-normal text-lg text-text mb-1">
+                    분석이 끝날 때까지 잠시 기다려주세요
                 </div>
             </div>
             {/* 원형 게이지 */}
@@ -35,7 +42,8 @@ export function AnalyzingStatusCard() {
                         strokeDasharray={2 * Math.PI * 20}
                         strokeDashoffset={2 * Math.PI * 20 * (1 - progress / 100)}
                         strokeLinecap="round"
-                        style={{ transition: "stroke-dashoffset 0.5s" }}
+                        style={{ transition: "stroke-dashoffset 1s" }}
+                        transform="rotate(-90 24 24)"
                     />
                 </svg>
                 <span className="absolute text-main font-bold text-lg">{progress}</span>
