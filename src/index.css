@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-main: #8fd694;
+  --color-main-light: #8fd6941a;
+  --color-secondary: #a7cbff;
+  --color-alert: #ef4444;
+  --color-disabled: #adaebc;
+  --color-text: #6b7280;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
