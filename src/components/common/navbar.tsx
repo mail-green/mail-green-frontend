@@ -8,9 +8,9 @@ const user = {
 
 
 const Navbar = () => {
-    // todo : 글로벌 state로 적용
+
     return (
-        <div className='flex flex-row items-center justify-between w-full'>
+        <div className='flex flex-row items-center justify-between w-full px-6'>
             <TitleText text={`안녕하세요, ${user.name}님`} />
             <div>
                 <button>
