@@ -10,7 +10,7 @@ type Props = {
 export function CarbonCard({ data }: Props) {
     return (
         <CarouselCardContainer>
-            <div className="font-bold text-lg leading-snug bg-main-light text-main opacity-90 whitespace-pre-line mb-10">
+            <div className="font-bold text-lg leading-snug text-main opacity-90 whitespace-pre-line mb-10">
                 {data.message}
             </div>
             <div className='flex flex-row items-center justify-end gap-2'>
