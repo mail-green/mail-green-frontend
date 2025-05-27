@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import GlobalContainer from '../container/GlobalContainer';
-import Navbar from '../components/common/navbar';
-import { AnalyzingStatusCard } from '../components/home/AnalyzingStatusCard';
-import TitleText from '../components/common/titleText';
+import { NavbarContainer } from '../components/common/navbar';
+import { AnalyzingStatusCard } from '../components/home/analyzingStatusCard';
 import { Carousel } from '../components/common/carousel/CarouselCardList';
 import { EffectCard } from '../components/home/carouselCards/EffectCard';
 import cardData from '../mock/exampleCarouselData';
@@ -10,6 +9,7 @@ import { AvailableFeatureTileGroup } from '../components/home/AvailableFeatureTi
 import exampleEcoCarouselData from '../mock/exampleCarbonCarouselData';
 import { CarbonCard } from '../components/home/carouselCards/CarbonCard';
 import { FeatureCardGroup } from '../components/home/feature/FeatureCardGroup';
+import TitleText from '../components/common/TitleText';
 
 function AnalyzingLayout({ progress, isComplete, showCheck }: { progress: number | undefined, isComplete: boolean, showCheck: boolean }) {
     return (
@@ -55,7 +55,7 @@ function HomeLayout() {
 
 function Home() {
     const [isAnalyzing, setIsAnalyzing] = useState(true); // 진입 시 분석중
-    const [progress, setProgress] = useState(95);
+    const [progress, setProgress] = useState(98);
     const [isComplete, setIsComplete] = useState(false);
     const [showCheck, setShowCheck] = useState(false);
     const [showNumber, setShowNumber] = useState(true); // 숫자(99) 애니메이션용
@@ -63,7 +63,6 @@ function Home() {
 
     useEffect(() => {
         if (!isAnalyzing) {
-            // analyzing → false로 바뀌면 0.5초 후 analyzing 화면 완전히 제거
             const timeout = setTimeout(() => setShowAnalyzing(false), 500);
             return () => clearTimeout(timeout);
         } else {
@@ -98,12 +97,11 @@ function Home() {
         }
     }, [isAnalyzing, progress]);
 
-    // 100일 때는 숫자 표시하지 않음, 단 showCheck true 후 400ms 동안은 숫자(99) 유지
     const displayProgress = progress < 100 || (progress === 100 && showNumber) ? (progress === 100 ? 99 : progress) : undefined;
 
     return (
         <GlobalContainer>
-            <Navbar />
+            <NavbarContainer mode='home' />
             <div className='relative'>
                 {showAnalyzing && (
                     <div className={`transition-all duration-500 absolute w-full left-0 top-0 z-10 ${isAnalyzing ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'}`}>
@@ -114,7 +112,7 @@ function Home() {
                     <HomeLayout />
                 </div>
             </div>
-        </GlobalContainer>
+        </GlobalContainer >
     );
 }
 
