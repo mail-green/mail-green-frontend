@@ -4,11 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import BackIcon from './BackIcon';
 import TitleText from './TitleText';
 
-export type NavbarMode = 'home' | 'sort';
+export type NavbarMode = 'home' | 'recommend';
 
 interface NavbarProps {
     mode: NavbarMode;
     onBack?: () => void;
+    title?: string;
 }
 
 function HomeNavbar() {
@@ -25,21 +26,21 @@ function HomeNavbar() {
     );
 }
 
-function SortNavbar({ onBack }: { onBack?: () => void }) {
+function SortNavbar({ onBack, title }: { onBack?: () => void; title: string; }) {
     return (
         <div className='flex flex-row items-center w-full px-4 py-2' onClick={onBack}>
             <button className='mr-2'>
                 <BackIcon />
             </button>
-            <h1 className='text-2xl font-bold'>발신자별로 정리하기</h1>
+            <h1 className='text-2xl font-bold'>{title}</h1>
         </div>
     );
 }
 
-export function Navbar({ mode, onBack }: NavbarProps) {
+export function Navbar({ mode, onBack, title }: NavbarProps) {
     switch (mode) {
-        case 'sort':
-            return <SortNavbar onBack={onBack} />;
+        case 'recommend':
+            return <SortNavbar onBack={onBack} title={title || ''} />;
         case 'home':
             return <HomeNavbar />
         default:
@@ -47,7 +48,7 @@ export function Navbar({ mode, onBack }: NavbarProps) {
     }
 }
 
-export function NavbarContainer({ mode, onBack }: NavbarProps) {
+export function NavbarContainer({ mode, onBack, title = '' }: NavbarProps) {
     return (
         <AnimatePresence mode="wait">
             <motion.div
@@ -57,7 +58,7 @@ export function NavbarContainer({ mode, onBack }: NavbarProps) {
                 exit={{ opacity: 0, x: -40 }}
                 transition={{ duration: 0.25 }}
             >
-                <Navbar mode={mode} onBack={onBack} />
+                <Navbar mode={mode} onBack={onBack} title={title} />
             </motion.div>
         </AnimatePresence>
     );

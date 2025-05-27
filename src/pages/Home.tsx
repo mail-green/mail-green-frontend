@@ -55,7 +55,7 @@ function HomeLayout() {
 
 function Home() {
     const [isAnalyzing, setIsAnalyzing] = useState(true); // 진입 시 분석중
-    const [progress, setProgress] = useState(95);
+    const [progress, setProgress] = useState(98);
     const [isComplete, setIsComplete] = useState(false);
     const [showCheck, setShowCheck] = useState(false);
     const [showNumber, setShowNumber] = useState(true); // 숫자(99) 애니메이션용
@@ -63,7 +63,6 @@ function Home() {
 
     useEffect(() => {
         if (!isAnalyzing) {
-            // analyzing → false로 바뀌면 0.5초 후 analyzing 화면 완전히 제거
             const timeout = setTimeout(() => setShowAnalyzing(false), 500);
             return () => clearTimeout(timeout);
         } else {
