@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import type { FilterList } from '../../types/filter';
 import { initialFilterData } from '../../data/initialFilterData';
-import { Navbar } from '../../components/common/navbar';
+import { Navbar, NavbarContainer } from '../../components/common/navbar';
 import SearchBar from '../../components/common/SearchBar';
 import GlobalContainer from '../../container/GlobalContainer';
 
@@ -18,7 +18,7 @@ function RecommendGPT() {
     };
 
     return <GlobalContainer>
-        <Navbar mode='recommend'
+        <NavbarContainer mode='recommend'
             title='GPT로 정리하기'
             onBack={() => {
                 navigate('/home');

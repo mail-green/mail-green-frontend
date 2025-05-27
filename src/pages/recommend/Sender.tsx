@@ -3,7 +3,7 @@ import GlobalContainer from '../../container/GlobalContainer';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from '../../components/common/SearchBar';
 import type { FilterList } from '../../types/filter';
-import { Navbar } from '../../components/common/navbar';
+import { Navbar, NavbarContainer } from '../../components/common/navbar';
 import { initialFilterData } from '../../data/initialFilterData';
 
 function RecommendSender() {
@@ -17,7 +17,7 @@ function RecommendSender() {
     };
 
     return <GlobalContainer>
-        <Navbar mode='recommend'
+        <NavbarContainer mode='recommend'
             title='발신자별로 정리하기'
             onBack={() => {
                 navigate('/home');

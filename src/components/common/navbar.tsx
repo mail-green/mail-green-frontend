@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import profile from '../../assets/nav/profile_example.png';
 import { motion, AnimatePresence } from 'framer-motion';
 import BackIcon from './BackIcon';
@@ -50,7 +50,7 @@ export function Navbar({ mode, onBack, title }: NavbarProps) {
 
 export function NavbarContainer({ mode, onBack, title = '' }: NavbarProps) {
     return (
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
             <motion.div
                 key={mode}
                 initial={{ opacity: 0, x: 40 }}

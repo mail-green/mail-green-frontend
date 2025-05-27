@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import GlobalContainer from '../container/GlobalContainer';
-import { Navbar } from '../components/common/navbar';
+import { Navbar, NavbarContainer } from '../components/common/navbar';
 import { AnalyzingStatusCard } from '../components/home/analyzingStatusCard';
 import { Carousel } from '../components/common/carousel/CarouselCardList';
 import { EffectCard } from '../components/home/carouselCards/EffectCard';
@@ -101,7 +101,7 @@ function Home() {
 
     return (
         <GlobalContainer>
-            <Navbar mode='home' />
+            <NavbarContainer mode='home' />
             <div className='relative'>
                 {showAnalyzing && (
                     <div className={`transition-all duration-500 absolute w-full left-0 top-0 z-10 ${isAnalyzing ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'}`}>
