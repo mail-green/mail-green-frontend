@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import GlobalContainer from '../../container/GlobalContainer';
-import { Navbar } from '../../components/common/Navbar';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from '../../components/common/SearchBar';
 import type { FilterList } from '../../types/filter';
+import { Navbar } from '../../components/common/navbar';
 
 
 

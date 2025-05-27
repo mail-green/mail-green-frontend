@@ -1,8 +1,8 @@
 import React from 'react'
 import profile from '../../assets/nav/profile_example.png';
-import TitleText from './TitleText';
 import { motion, AnimatePresence } from 'framer-motion';
 import BackIcon from './BackIcon';
+import TitleText from './TitleText';
 
 export type NavbarMode = 'home' | 'sort';
 
