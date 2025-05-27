@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export type FeatureCardData = {
     bgColor: string; // tailwind 색상 클래스 또는 hex
@@ -7,10 +8,12 @@ export type FeatureCardData = {
     description: string;
     highlight?: string; // 강조 텍스트 (optional)
     buttonText: string;
-    onClick?: () => void;
+    url?: string;
 };
 
 export function FeatureCard({ data }: { data: FeatureCardData }) {
+    const navigate = useNavigate();
+
     return (
         <div
             className={`rounded-2xl px-6 py-6 w-full mb-6 relative flex flex-col min-h-[160px] transition-transform duration-200 hover:scale-[1.03] active:scale-95 hover:shadow-lg cursor-pointer hover:opacity-90 active:opacity-80`}
@@ -27,7 +30,11 @@ export function FeatureCard({ data }: { data: FeatureCardData }) {
             </div>
             <button
                 className="w-full flex items-center justify-between font-bold text-base mt-auto bg-transparent p-0 border-none outline-none cursor-pointer"
-                onClick={data.onClick}
+                onClick={() => {
+                    if (data.url) {
+                        navigate(data.url);
+                    }
+                }}
                 style={{ background: "none", color: data.textColor }}
             >
                 <span>{data.buttonText}</span>

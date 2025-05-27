@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import GlobalContainer from '../container/GlobalContainer';
-import Navbar from '../components/common/navbar';
-import { AnalyzingStatusCard } from '../components/home/AnalyzingStatusCard';
-import TitleText from '../components/common/titleText';
+import { Navbar } from '../components/common/Navbar';
+import { AnalyzingStatusCard } from '../components/home/analyzingStatusCard';
+import TitleText from '../components/common/TitleText';
 import { Carousel } from '../components/common/carousel/CarouselCardList';
 import { EffectCard } from '../components/home/carouselCards/EffectCard';
 import cardData from '../mock/exampleCarouselData';
@@ -98,12 +98,11 @@ function Home() {
         }
     }, [isAnalyzing, progress]);
 
-    // 100일 때는 숫자 표시하지 않음, 단 showCheck true 후 400ms 동안은 숫자(99) 유지
     const displayProgress = progress < 100 || (progress === 100 && showNumber) ? (progress === 100 ? 99 : progress) : undefined;
 
     return (
         <GlobalContainer>
-            <Navbar />
+            <Navbar mode='home' />
             <div className='relative'>
                 {showAnalyzing && (
                     <div className={`transition-all duration-500 absolute w-full left-0 top-0 z-10 ${isAnalyzing ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'}`}>
@@ -114,7 +113,7 @@ function Home() {
                     <HomeLayout />
                 </div>
             </div>
-        </GlobalContainer>
+        </GlobalContainer >
     );
 }
 
