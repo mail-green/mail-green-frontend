@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import GlobalContainer from '../container/GlobalContainer';
 import { Navbar } from '../components/common/navbar';
 import { AnalyzingStatusCard } from '../components/home/analyzingStatusCard';
-import TitleText from '../components/common/TitleText';
 import { Carousel } from '../components/common/carousel/CarouselCardList';
 import { EffectCard } from '../components/home/carouselCards/EffectCard';
 import cardData from '../mock/exampleCarouselData';
@@ -10,6 +9,7 @@ import { AvailableFeatureTileGroup } from '../components/home/AvailableFeatureTi
 import exampleEcoCarouselData from '../mock/exampleCarbonCarouselData';
 import { CarbonCard } from '../components/home/carouselCards/CarbonCard';
 import { FeatureCardGroup } from '../components/home/feature/FeatureCardGroup';
+import TitleText from '../components/common/TitleText';
 
 function AnalyzingLayout({ progress, isComplete, showCheck }: { progress: number | undefined, isComplete: boolean, showCheck: boolean }) {
     return (
