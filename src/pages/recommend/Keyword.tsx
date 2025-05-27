@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import type { FilterList } from '../../types/filter';
 import { initialFilterData } from '../../data/initialFilterData';
-import { Navbar, NavbarContainer } from '../../components/common/navbar';
+import { NavbarContainer } from '../../components/common/navbar';
 import SearchBar from '../../components/common/SearchBar';
 import GlobalContainer from '../../container/GlobalContainer';
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import GlobalContainer from '../container/GlobalContainer';
-import { Navbar, NavbarContainer } from '../components/common/navbar';
+import { NavbarContainer } from '../components/common/navbar';
 import { AnalyzingStatusCard } from '../components/home/analyzingStatusCard';
 import { Carousel } from '../components/common/carousel/CarouselCardList';
 import { EffectCard } from '../components/home/carouselCards/EffectCard';

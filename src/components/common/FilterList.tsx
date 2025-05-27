@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { DefaultFilterType, FilterList } from "../../types/filter";
+import type { DefaultFilterType, FilterList, ReadFilterType, SizeFilterType, PeriodFilterType } from "../../types/filter";
 import { FILTER_OPTIONS } from "../../data/filterOptions";
 import DeleteIcon from "./DeleteIcon";
 import BottomSheet from "./BottomSheet";
@@ -31,7 +31,14 @@ export const FilterLists = ({ filterList, setFilterList }: FilterListsProps) => 
         if (sheetIdx === null) return;
         setFilterList(prev => {
             const newList = [...prev];
-            newList[sheetIdx] = { ...newList[sheetIdx], option: option as import('../../types/filter').ReadFilterType | import('../../types/filter').SizeFilterType | import('../../types/filter').PeriodFilterType };
+            const current = newList[sheetIdx];
+            if (current.type === "읽음 상태") {
+                newList[sheetIdx] = { ...current, option: option as ReadFilterType };
+            } else if (current.type === "크기") {
+                newList[sheetIdx] = { ...current, option: option as SizeFilterType };
+            } else if (current.type === "기간") {
+                newList[sheetIdx] = { ...current, option: option as PeriodFilterType };
+            }
             return newList;
         });
         setSheetIdx(null);

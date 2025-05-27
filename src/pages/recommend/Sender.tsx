@@ -3,7 +3,7 @@ import GlobalContainer from '../../container/GlobalContainer';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from '../../components/common/SearchBar';
 import type { FilterList } from '../../types/filter';
-import { Navbar, NavbarContainer } from '../../components/common/navbar';
+import { NavbarContainer } from '../../components/common/navbar';
 import { initialFilterData } from '../../data/initialFilterData';
 
 function RecommendSender() {
