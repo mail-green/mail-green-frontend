@@ -32,7 +32,7 @@ export function AnalyzingStatusCard({ progress, isComplete, showCheck }: { progr
                         stroke="#8FD694"
                         strokeWidth="6"
                         strokeDasharray={2 * Math.PI * 20}
-                        strokeDashoffset={2 * Math.PI * 20 * (1 - progress / 100)}
+                        strokeDashoffset={2 * Math.PI * 20 * (1 - (progress ?? 1) / 100)}
                         strokeLinecap="round"
                         style={{ transition: "stroke-dashoffset 1s" }}
                         transform="rotate(-90 24 24)"
