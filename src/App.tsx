@@ -5,6 +5,7 @@ import RecommendAI from './pages/recommend/AI';
 import RecommendKeyword from './pages/recommend/Keyword';
 import RecommendSender from './pages/recommend/Sender';
 import RecommendGPT from './pages/recommend/GPT';
+import LoginSuccessPage from './pages/LoginSuccessPage';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/login/success" element={<LoginSuccessPage />} />
         <Route path="/home" element={<Home />} />
         <Route path="/recommend/ai" element={<RecommendAI />} />
         <Route path="/recommend/keyword" element={<RecommendKeyword />} />
