@@ -1,44 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import GlobalContainer from '../container/GlobalContainer';
-import { NavbarContainer } from '../components/common/navbar';
+import { Navbar } from '../components/common/navbar';
 import { AnalyzingStatusCard } from '../components/home/analyzingStatusCard';
 import { Carousel } from '../components/common/carousel/CarouselCardList';
-import { EffectCard } from '../components/home/carouselCards/EffectCard';
-import cardData from '../mock/exampleCarouselData';
-import { AvailableFeatureTileGroup } from '../components/home/AvailableFeatureTileGroup';
 import exampleEcoCarouselData from '../mock/exampleCarbonCarouselData';
 import { CarbonCard } from '../components/home/carouselCards/CarbonCard';
 import { FeatureCardGroup } from '../components/home/feature/FeatureCardGroup';
-import TitleText from '../components/common/TitleText';
+import { getFetch, postFetch } from '../utils/fetch/fetch';
+import { useNavigate } from 'react-router-dom';
 
-function AnalyzingLayout({ progress, isComplete, showCheck }: { progress: number | undefined, isComplete: boolean, showCheck: boolean }) {
-    return (
-        <div className='px-4'>
-            <div className='mt-4'>
-                <AnalyzingStatusCard progress={progress} isComplete={isComplete} showCheck={showCheck} />
-            </div>
-            <div className='mt-4'>
-                <TitleText text={'메일을 정리하면,\n 이런 효과가 있어요!'} />
-            </div>
-            <div className='mt-6'>
-                <Carousel
-                    data={cardData}
-                    renderCard={(item, idx) => <EffectCard text={item.text} key={idx} />}
-                />
-            </div>
-            <div className='mt-6'>
-                <TitleText text={'메일 분석이 끝나면\n이런 기능들을 써볼 수 있어요!'} />
-            </div>
-            <div className='mt-6'>
-                <AvailableFeatureTileGroup />
-            </div>
-        </div>
-    )
-}
 
-function HomeLayout() {
+function HomeLayout({ isAnalyzing, progress, isComplete, showCheck }: { isAnalyzing: boolean, progress: number, isComplete: boolean, showCheck: boolean }) {
     return (
         <>
+            {
+                isAnalyzing && (
+                    <div className='mt-4'>
+                        <AnalyzingStatusCard progress={progress} isComplete={isComplete} showCheck={showCheck} />
+                    </div>
+                )
+            }
+
             <div className='mt-4'>
                 <Carousel<CarbonCarouselData>
                     data={exampleEcoCarouselData}
@@ -54,13 +36,81 @@ function HomeLayout() {
 }
 
 function Home() {
-    const [isAnalyzing, setIsAnalyzing] = useState(true); // 진입 시 분석중
-    const [progress, setProgress] = useState(98);
+    const [isAnalyzing, setIsAnalyzing] = useState(true);
+    const [progress, setProgress] = useState(0);
     const [isComplete, setIsComplete] = useState(false);
     const [showCheck, setShowCheck] = useState(false);
-    const [showNumber, setShowNumber] = useState(true); // 숫자(99) 애니메이션용
-    const [showAnalyzing, setShowAnalyzing] = useState(true); // analyzing 화면 페이드아웃용
+    const [showAnalyzing, setShowAnalyzing] = useState(true);
+    const pollingRef = useRef<number | null>(null);
 
+    const navigate = useNavigate();
+
+    const userId = useMemo(() => {
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        return user?.id;
+    }, []);
+
+    // 분석 시작 함수
+    const startAnalyzing = async () => {
+        try {
+            await postFetch<{ message: string; status?: string }>(
+                `/mail/analyze?user_id=${userId}`,
+            );
+            setIsAnalyzing(true);
+        } catch {
+            setIsAnalyzing(false);
+        }
+    };
+
+    // 진행상황 조회 함수
+    const getProgress = async () => {
+        const res = await getFetch<{ in_progress: boolean; progress_pct: number }>(
+            '/mail/progress',
+            { user_id: userId }
+        );
+        const { in_progress, progress_pct } = res;
+
+        setProgress(progress_pct);
+        setIsAnalyzing(in_progress);
+        setIsComplete(!in_progress);
+        return in_progress;
+    };
+
+    // polling 관리 useEffect
+    useEffect(() => {
+        if (!userId) {
+            alert('로그인 후 이용해주세요.');
+            navigate('/login');
+            return;
+        }
+
+        // 최초 진입 시 분석 필요 여부 확인
+        (async () => {
+            const inProgress = await getProgress();
+            if (!inProgress) {
+                await startAnalyzing();
+                await getProgress();
+            }
+        })();
+
+        // polling 시작
+        if (!pollingRef.current) {
+            pollingRef.current = window.setInterval(() => {
+                getProgress();
+            }, 2000);
+        }
+
+        // 언마운트 시 polling 해제
+        return () => {
+            if (pollingRef.current) {
+                clearInterval(pollingRef.current);
+                pollingRef.current = null;
+            }
+        };
+    }, [userId, navigate]);
+
+    // analyzing → false로 바뀌면 0.5초 후 analyzing 화면 제거
     useEffect(() => {
         if (!isAnalyzing) {
             const timeout = setTimeout(() => setShowAnalyzing(false), 500);
@@ -70,49 +120,15 @@ function Home() {
         }
     }, [isAnalyzing]);
 
-    useEffect(() => {
-        if (!isAnalyzing) return;
-        // 90~99까지 1%씩 자연스럽게 증가
-        if (progress < 99) {
-            const interval = setInterval(() => {
-                setProgress((prev) => {
-                    if (prev < 99) return prev + 1;
-                    return 99;
-                });
-            }, 500); // 10% → 5초, 1%마다 0.5초
-            return () => clearInterval(interval);
-        } else if (progress === 99) {
-            // 99에서 100이 되는 순간 체크 애니메이션
-            const timeout = setTimeout(() => {
-                setShowCheck(true);
-                setProgress(100);
-                // 숫자 사라짐 애니메이션 시간(400ms) 후 숫자 제거
-                setTimeout(() => setShowNumber(false), 400);
-                setTimeout(() => {
-                    setIsComplete(true);
-                    setIsAnalyzing(false);
-                }, 1000); // 2초 후 완료
-            }, 500);
-            return () => clearTimeout(timeout);
-        }
-    }, [isAnalyzing, progress]);
-
-    const displayProgress = progress < 100 || (progress === 100 && showNumber) ? (progress === 100 ? 99 : progress) : undefined;
-
     return (
         <GlobalContainer>
-            <NavbarContainer mode='home' />
+            <Navbar mode='home' />
             <div className='relative'>
-                {showAnalyzing && (
-                    <div className={`transition-all duration-500 absolute w-full left-0 top-0 z-10 ${isAnalyzing ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'}`}>
-                        <AnalyzingLayout progress={displayProgress} isComplete={isComplete} showCheck={showCheck} />
-                    </div>
-                )}
-                <div className={`transition-all duration-500 ${isAnalyzing ? 'opacity-0 translate-y-8' : 'opacity-100 translate-y-0'}`}>
-                    <HomeLayout />
+                <div className={`transition-all duration-500`}>
+                    <HomeLayout isAnalyzing={isAnalyzing} progress={progress} isComplete={isComplete} showCheck={showCheck} />
                 </div>
             </div>
-        </GlobalContainer >
+        </GlobalContainer>
     );
 }
 
