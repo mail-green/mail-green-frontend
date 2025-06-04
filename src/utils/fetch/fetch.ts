@@ -93,3 +93,30 @@ export default function Fetch() {
 
 const { get, post, put } = Fetch();
 export { get as getFetch, post as postFetch, put as putFetch };
+
+// 발신자별 메일 개수 조회 API
+export function getSenderCounts<T>(
+  params: Record<string, string | number | boolean>
+) {
+  return get<T>("/sender/counts", params);
+}
+
+// 개별 발신자 메일 목록 조회 API
+export function getSender<T>(
+  params: Record<string, string | number | boolean>
+) {
+  return get<T>("/sender", params);
+}
+
+// 개별 키워드(토픽) 메일 목록 조회 API
+export function getKeywordMails<T>(
+  params: Record<string, string | number | boolean>
+) {
+  return get<T>("/keyword", params);
+}
+
+export function getKeywordCounts<T>(
+  params: Record<string, string | number | boolean>
+) {
+  return get<T>("/keyword/counts", params);
+}

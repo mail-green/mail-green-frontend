@@ -1,5 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getFetch } from "../../../utils/fetch/fetch";
+import useUser from "../../../hooks/useUser";
+import type { CardType } from "../../../data/featureCardData";
 
 export type FeatureCardData = {
     bgColor: string; // tailwind 색상 클래스 또는 hex
@@ -9,10 +13,50 @@ export type FeatureCardData = {
     highlight?: string; // 강조 텍스트 (optional)
     buttonText: string;
     url?: string;
+    type: CardType;
+};
+
+type SenderMailCard = {
+    sender: string;
+    name: string;
+    count: number;
+};
+
+type KeywordMailCard = {
+    topic_id: number;
+    description: string;
+    count: number;
+};
+
+const endpointMap: Record<CardType, string> = {
+    sender: '/sender/top',
+    keyword: '/keyword/top',
+    ai: '/ai/top',
+    gpt: '/gpt/top',
 };
 
 export function FeatureCard({ data }: { data: FeatureCardData }) {
     const navigate = useNavigate();
+    const user = useUser();
+
+    const { data: result, isLoading } = useQuery({
+        queryKey: ['top', data.type, user.id],
+        queryFn: () => getFetch<SenderMailCard[] | KeywordMailCard[]>(
+            endpointMap[data.type],
+            { user_id: user.id, limit: 3 }
+        ),
+        enabled: data.type === "sender" || data.type === "keyword",
+    });
+
+    let summary = data.description;
+
+    if (!isLoading && result && result.length > 0) {
+        if (data.type === "sender") {
+            summary = (result as SenderMailCard[]).map((s) => s.name).join(", ");
+        } else if (data.type === "keyword") {
+            summary = (result as KeywordMailCard[]).map((k) => k.description).join(", ");
+        }
+    }
 
     return (
         <div
@@ -28,7 +72,7 @@ export function FeatureCard({ data }: { data: FeatureCardData }) {
                 {data.title}
             </div>
             <div className="font-bold text-xl mb-6 whitespace-pre-line" style={{ color: data.textColor }}>
-                {data.description}
+                {isLoading ? "로딩중..." : summary}
                 {data.highlight && (
                     <span className="block font-bold text-2xl mt-1">{data.highlight}</span>
                 )}

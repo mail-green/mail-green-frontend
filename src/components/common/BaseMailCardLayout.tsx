@@ -5,11 +5,12 @@ interface BaseMailCardLayoutProps {
     subtitle: React.ReactNode;
     count: number;
     children?: React.ReactNode;
+    onClick?: () => void;
 }
 
-export function BaseMailCardLayout({ title, subtitle, count, children }: BaseMailCardLayoutProps) {
+export function BaseMailCardLayout({ title, subtitle, count, children, onClick }: BaseMailCardLayoutProps) {
     return (
-        <div className="rounded-xl border border-gray-200 p-4 mb-4 flex flex-col gap-2 bg-white">
+        <div className="rounded-xl border border-gray-200 p-4 mb-4 flex flex-col gap-2 bg-white" onClick={onClick} style={{ cursor: onClick ? 'pointer' : undefined }}>
             <div className="flex items-center justify-between">
                 <div>
                     <div className="text-xl font-bold" style={{ color: 'var(--color-main)' }}>{title}</div>

@@ -1,4 +1,5 @@
 import { ListTile } from '../common/ListTile';
+import { useNavigate } from 'react-router-dom';
 
 const features = [
     'GPT로 메일 정리해보기',
@@ -8,10 +9,13 @@ const features = [
 ];
 
 export function AvailableFeatureTileGroup() {
+    const navigate = useNavigate();
     return (
         <div className="space-y-3">
-            {features.map((feature, idx) => (
-                <ListTile key={feature}>{feature}</ListTile>
+            {features.map((feature) => (
+                <ListTile key={feature} onClick={() => {
+                    navigate(`/home/feature/${feature}`);
+                }}>{feature}</ListTile>
             ))}
         </div>
     );

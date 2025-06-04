@@ -5,6 +5,7 @@ import BackIcon from './BackIcon';
 import TitleText from './TitleText';
 import { useUserStore } from '../../store/userStore';
 import { useNavigate } from 'react-router-dom';
+import useUser from '../../hooks/useUser';
 
 function LogoutIcon({ size = 24 }: { size?: number }) {
     return (
@@ -25,7 +26,7 @@ interface NavbarProps {
 }
 
 function HomeNavbar() {
-    const user = { name: '준혁' };
+    const user = useUser();
     const clearUser = useUserStore((state) => state.clearUser);
     const navigate = useNavigate();
     const handleLogout = () => {
@@ -34,7 +35,7 @@ function HomeNavbar() {
     };
     return (
         <div className='flex flex-row items-center justify-between w-full px-6'>
-            <TitleText text={`안녕하세요, ${user.name}님`} />
+            <TitleText text={`안녕하세요, ${user.name}님!`} />
             <div className='flex flex-row items-center gap-2'>
                 <button>
                     <img src={profile} alt="프로필 이미지" />

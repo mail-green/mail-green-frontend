@@ -1,9 +1,9 @@
 import React from 'react';
 import type { SenderMailCard } from '../../types/senderMailCard';
 
-export function MailCardItem({ card }: { card: SenderMailCard }) {
+export function MailCardItem({ card, onClick }: { card: SenderMailCard; onClick?: () => void }) {
     return (
-        <div className="rounded-xl border border-gray-200 p-4 mb-4 flex flex-col gap-2 bg-white">
+        <div className="rounded-xl border border-gray-200 p-4 mb-4 flex flex-col gap-2 bg-white cursor-pointer" onClick={onClick}>
             <div className="flex items-center justify-between">
                 <div>
                     <div className="text-xl font-bold" style={{ color: 'var(--color-main)' }}>{card.name}에서 온 메일</div>
@@ -17,7 +17,7 @@ export function MailCardItem({ card }: { card: SenderMailCard }) {
                 </div>
             </div>
             <div className="flex justify-end">
-                <button className="text-black font-semibold flex items-center gap-1">
+                <button className="text-black font-semibold flex items-center gap-1" onClick={e => { e.stopPropagation(); onClick?.(); }}>
                     정리하러 가기 <span>›</span>
                 </button>
             </div>

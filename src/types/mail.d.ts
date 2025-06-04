@@ -6,3 +6,11 @@ export interface Mail {
   date: string;
   content: string;
 }
+
+export type RawMail = {
+  id: string;
+  subject: string;
+  snippet: string;
+  received_at: string;
+  is_read: boolean;
+};
