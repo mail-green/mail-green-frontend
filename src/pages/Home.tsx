@@ -65,16 +65,16 @@ function Home() {
 
     // 진행상황 조회 함수
     const getProgress = async () => {
-        const res = await getFetch<{ in_progress: boolean; progress_pct: number }>(
+        const res = await getFetch<{ in_progress: boolean; progress_pct: number; status: string }>(
             '/mail/progress',
             { user_id: userId }
         );
-        const { in_progress, progress_pct } = res;
+        const { in_progress, progress_pct, status } = res;
 
         setProgress(progress_pct);
         setIsAnalyzing(in_progress);
-        setIsComplete(!in_progress);
-        return in_progress;
+        setIsComplete(status === "done" || status === "failed");
+        return status === "done" || status === "failed";
     };
 
     // polling 관리 useEffect
@@ -87,8 +87,11 @@ function Home() {
 
         // 최초 진입 시 분석 필요 여부 확인
         (async () => {
-            const inProgress = await getProgress();
-            if (!inProgress) {
+            const isComplete = await getProgress();
+
+            if (!isComplete) {
+                console.log("CALLED")
+                console.log(isComplete);
                 await startAnalyzing();
                 await getProgress();
             }
@@ -96,8 +99,14 @@ function Home() {
 
         // polling 시작
         if (!pollingRef.current) {
-            pollingRef.current = window.setInterval(() => {
-                getProgress();
+            pollingRef.current = window.setInterval(async () => {
+                const isComplete = await getProgress();
+                if (isComplete) {
+                    console.log("CALLED");
+                    console.log(isComplete);
+                    clearInterval(pollingRef.current!);
+                    pollingRef.current = null;
+                }
             }, 2000);
         }
 
