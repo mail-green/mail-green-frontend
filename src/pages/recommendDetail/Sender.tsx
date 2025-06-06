@@ -1,15 +1,19 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { NavbarContainer as NavigationBar } from '../../components/common/navbar';
 import GlobalContainer from '../../container/GlobalContainer';
-import { useQuery } from '@tanstack/react-query';
-import { getSender } from '../../utils/fetch/fetch';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getSender, deleteFetch } from '../../utils/fetch/fetch';
 import { getFilterParams } from '../../utils/filter/getFilterParams';
 import SearchBar from '../../components/common/SearchBar';
 import { initialFilterData } from '../../data/initialFilterData';
 import type { FilterList } from '../../types/filter';
 import Loading from '../../components/common/Loading';
 import useUser from '../../hooks/useUser';
+import LeafIcon from '../../components/common/LeafIcon';
+import BottomSheet from '../../components/common/BottomSheet';
+import SuccessModal from '../../components/common/SuccessModal';
+import autoAnimate from '@formkit/auto-animate';
 // import { Trash2, Globe } from 'lucide-react';
 
 // 메일 데이터 타입
@@ -20,6 +24,7 @@ interface MailItem {
     received_at: string;
     is_read: boolean;
     isDeleted: boolean;
+    isImportant: boolean;
 }
 
 // 날짜별 그룹핑 함수
@@ -50,6 +55,10 @@ const Sender = () => {
     // 검색어, 필터 상태 관리
     const [keyword, setKeyword] = useState('');
     const [filterList, setFilterList] = useState<FilterList>(initialFilterList || initialFilterData);
+    const queryClient = useQueryClient();
+    const [showConfirmModal, setShowConfirmModal] = useState(false); // 삭제 확인 모달
+    const [showSuccessModal, setShowSuccessModal] = useState(false); // 삭제 성공 모달
+    const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([]); // 삭제할 id 목록
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setKeyword(e.target.value);
@@ -75,9 +84,51 @@ const Sender = () => {
     const [mails, setMails] = useState<MailItem[]>([]);
     useEffect(() => {
         if (result) {
-            setMails(result.map(mail => ({ ...mail, isDeleted: false })));
+            setMails(result.map(mail => ({ ...mail, isDeleted: false, isImportant: false })));
         }
     }, [result]);
+
+    // 삭제 API mutation
+    const deleteMutation = useMutation({
+        mutationFn: async ({ messageIds, confirm }: { messageIds: string[]; confirm: boolean }) => {
+            return await deleteFetch(`/mail/trash?user_id=${user.id}`, {
+                message_ids: messageIds,
+                confirm,
+            });
+        },
+        onSuccess: (_data, variables) => {
+            if (variables.confirm) {
+                // 실제 삭제 성공 시
+                setShowSuccessModal(true);
+                setShowConfirmModal(false);
+                setMails(mails => mails.filter(m => !pendingDeleteIds.includes(m.id)));
+                setPendingDeleteIds([]);
+                queryClient.invalidateQueries({ queryKey: ['mailSender'] });
+            }
+        },
+    });
+
+    // 삭제 버튼 클릭 시 (confirm: false)
+    const handleDeleteRequest = () => {
+        const selectedIds = mails.filter(m => m.isDeleted).map(m => m.id);
+        if (selectedIds.length === 0) return;
+        setPendingDeleteIds(selectedIds);
+        deleteMutation.mutate({ messageIds: selectedIds, confirm: false });
+        setShowConfirmModal(true);
+    };
+
+    // 모달에서 '닫기'(=실제 삭제) 클릭 시 (confirm: true)
+    const handleConfirmDelete = () => {
+        deleteMutation.mutate({ messageIds: pendingDeleteIds, confirm: true });
+    };
+
+    // SuccessModal 닫기 시
+    const handleSuccessClose = () => {
+        setShowSuccessModal(false);
+        setMails(mails => mails.map(m => ({ ...m, isDeleted: false })));
+        setPendingDeleteIds([]);
+        queryClient.invalidateQueries({ queryKey: ['mailSender'] });
+    };
 
     // 삭제/보관 토글
     const handleDeleteToggle = (id: string) => {
@@ -88,8 +139,26 @@ const Sender = () => {
         );
     };
 
+    // 중요 토글
+    const handleImportantToggle = (id: string) => {
+        setMails((prev) =>
+            prev.map((mail) =>
+                mail.id === id ? { ...mail, isImportant: !mail.isImportant } : mail
+            )
+        );
+    };
+
     // 날짜별 그룹핑
     const grouped = useMemo(() => groupByDate(mails), [mails]);
+
+    // 날짜별 그룹에 ref를 부여하기 위한 준비
+    const dateLabels = Object.keys(grouped);
+    const listRefs = useRef<(HTMLDivElement | null)[]>([]);
+    useEffect(() => {
+        listRefs.current.forEach((ref) => {
+            if (ref) autoAnimate(ref);
+        });
+    }, [grouped]);
 
     // 삭제 선택된 메일 개수
     const deletedCount = mails.filter((m) => m.isDeleted).length;
@@ -109,42 +178,60 @@ const Sender = () => {
                     />
                 </div>
                 {isLoading && <Loading />}
-                {!isLoading && Object.entries(grouped).map(([dateLabel, mailList]) => (
-                    mailList.length > 0 ? (
+                {!isLoading && dateLabels.map((dateLabel, idx) => {
+                    const mailList = grouped[dateLabel];
+                    if (!mailList) {
+                        return (
+                            <div className="mt-6 px-4" key={dateLabel}>
+                                <Loading />
+                            </div>
+                        );
+                    }
+                    return mailList.length > 0 ? (
                         <div key={dateLabel} className="mt-6 px-4">
                             <div className="font-bold text-lg mb-2">{dateLabel}</div>
-                            {mailList.map((mail) => (
-                                <div key={mail.id} className="bg-white rounded-xl shadow p-4 mb-4">
-                                    <div className="flex items-center mb-2">
-                                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-lg mr-3">
-                                            {mail.subject[0]}
+                            <div ref={el => { listRefs.current[idx] = el; }}>
+                                {mailList.map((mail) => (
+                                    <div key={mail.id} className="bg-white rounded-xl shadow p-4 mb-4">
+                                        <div className="flex items-center mb-2">
+                                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-lg mr-3">
+                                                {mail.subject[0]}
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="font-bold break-all">{mail.subject}</div>
+                                                <div className="text-xs text-gray-500">{mail.is_read ? '읽음' : '안읽음'}</div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div className="font-bold">{mail.subject}</div>
-                                            <div className="text-xs text-gray-500">{mail.is_read ? '읽음' : '안읽음'}</div>
+                                        <div className="text-sm text-gray-600 mb-3">{mail.snippet}</div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                className={`flex-1 py-2 rounded-lg font-bold ${mail.isDeleted ? 'bg-gray-200 text-gray-400' : 'bg-red-100 text-red-500'} transition`}
+                                                onClick={() => handleDeleteToggle(mail.id)}
+                                            >
+                                                {mail.isDeleted ? '보관' : '삭제'}
+                                            </button>
+                                            <button
+                                                className={`flex-1 py-2 rounded-lg font-bold border transition ${mail.isImportant ? 'bg-yellow-400 text-yellow-900 border-yellow-400' : 'bg-yellow-100 text-yellow-600 border-yellow-200'}`}
+                                                onClick={() => handleImportantToggle(mail.id)}
+                                            >
+                                                <span role="img" aria-label="star">{mail.isImportant ? '★' : '☆'}</span> 중요
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="text-sm text-gray-600 mb-3">{mail.snippet}</div>
-                                    <button
-                                        className={`w-full py-2 rounded-lg font-bold ${mail.isDeleted ? 'bg-gray-200 text-gray-400' : 'bg-red-100 text-red-500'} transition`}
-                                        onClick={() => handleDeleteToggle(mail.id)}
-                                    >
-                                        {mail.isDeleted ? '보관' : '삭제'}
-                                    </button>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     ) : (
-                        <div className="mt-6 px-4">
+                        <div className="mt-6 px-4" key={dateLabel}>
                             <div className="font-bold text-lg mb-2">메일이 없습니다.</div>
                             <div className="text-sm text-gray-500">검색 결과가 없습니다.</div>
                         </div>
-                    )
-                ))}
+                    );
+                })}
                 {/* 하단 플로팅 삭제 UI */}
                 <div
                     className={`
-                        fixed left-0 right-0 bottom-0 z-50
+                        fixed left-0 right-0 bottom-0 z-10
                         transition-transform duration-300 ease-in-out
                         ${deletedCount > 0 ? 'translate-y-0' : 'translate-y-full pointer-events-none'}
                     `}
@@ -158,11 +245,51 @@ const Sender = () => {
                                 <span>예상 탄소 절감량 : <b className="text-main">{carbonSaved}g CO₂</b></span>
                             </div>
                         </div>
-                        <button className="bg-main text-white rounded-full p-3 ml-4">
+                        <button className="bg-main text-white rounded-full p-3 ml-4" onClick={handleDeleteRequest}>
                             <span role="img" aria-label="delete">🗑️</span>
                         </button>
                     </div>
                 </div>
+                {/* 삭제 확인 모달 (BottomSheet 활용, 간단 안내/확인) */}
+                <BottomSheet open={showConfirmModal} onClose={() => setShowConfirmModal(false)}>
+                    <div className="flex flex-col items-center text-center relative">
+                        {/* 오버레이 로딩 */}
+                        {deleteMutation.isPending && (
+                            <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center z-10">
+                                <Loading />
+                            </div>
+                        )}
+                        <div className="bg-green-50 rounded-full w-14 h-14 flex items-center justify-center mb-4">
+                            <LeafIcon className="w-8 h-8 text-green-500" />
+                        </div>
+                        <div className="font-bold text-lg mb-2">정말 삭제하시겠어요?</div>
+                        <div className="text-sm mb-6">
+                            선택한 메일 {pendingDeleteIds.length}개를 삭제합니다.<br />
+                            예상 탄소 절감량: <span className="text-green-600 font-bold">{carbonSaved}g CO₂</span>
+                        </div>
+                        <button
+                            className="w-full py-3 rounded-lg bg-main text-white font-bold text-base hover:bg-main transition mb-2"
+                            onClick={handleConfirmDelete}
+                            disabled={deleteMutation.isPending}
+                        >
+                            {deleteMutation.isPending ? <Loading /> : '삭제하기'}
+                        </button>
+                        <button
+                            className="w-full py-3 rounded-lg border border-gray-200 font-semibold text-gray-700 bg-white hover:bg-gray-50 transition"
+                            onClick={() => setShowConfirmModal(false)}
+                            disabled={deleteMutation.isPending}
+                        >
+                            취소
+                        </button>
+                    </div>
+                </BottomSheet>
+                {/* 삭제 성공 모달 */}
+                <SuccessModal
+                    open={showSuccessModal}
+                    onClose={handleSuccessClose}
+                    userName={user.name || ''}
+                    carbonSaved={carbonSaved}
+                />
             </div>
         </GlobalContainer>
     );

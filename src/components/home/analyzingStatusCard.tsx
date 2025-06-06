@@ -1,6 +1,6 @@
 import React from "react";
 
-export function AnalyzingStatusCard({ progress, isComplete, showCheck }: { progress: number | undefined, isComplete: boolean, showCheck: boolean }) {
+export function AnalyzingStatusCard({ progress, isComplete, showCheck = false }: { progress: number | undefined, isComplete: boolean, showCheck?: boolean }) {
     const userName = "준혁";
 
     return (

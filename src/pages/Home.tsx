@@ -8,30 +8,41 @@ import { CarbonCard } from '../components/home/carouselCards/CarbonCard';
 import { FeatureCardGroup } from '../components/home/feature/FeatureCardGroup';
 import { getFetch, postFetch } from '../utils/fetch/fetch';
 import { useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 
 
-function HomeLayout({ isAnalyzing, progress, isComplete, showCheck }: { isAnalyzing: boolean, progress: number, isComplete: boolean, showCheck: boolean }) {
+function HomeLayout({ isAnalyzing, progress, isComplete }: { isAnalyzing: boolean, progress: number, isComplete: boolean }) {
     return (
-        <>
-            {
-                isAnalyzing && (
-                    <div className='mt-4'>
-                        <AnalyzingStatusCard progress={progress} isComplete={isComplete} showCheck={showCheck} />
-                    </div>
-                )
-            }
+        <motion.div layout className="min-h-[400px]">
+            <AnimatePresence mode="wait">
+                {isAnalyzing && (
+                    <motion.div
+                        key="analyzing"
+                        initial={{ opacity: 1, y: -40, height: 0, marginBottom: 0, padding: 0 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -40, height: 0, marginBottom: 0, padding: 0 }}
+                        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                        layout
+                        style={{ overflow: 'hidden', marginBottom: 24 }}
+                    >
+                        <AnalyzingStatusCard progress={progress} isComplete={isComplete} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            <div className='mt-4'>
-                <Carousel<CarbonCarouselData>
-                    data={exampleEcoCarouselData}
-                    renderCard={(item, idx) => <CarbonCard data={item} key={idx} />}
-                />
-            </div>
-            <div className='mt-6'>
-                <FeatureCardGroup />
-            </div>
-            <div className='h-6' />
-        </>
+            <motion.div layout>
+                <div className='mt-4'>
+                    <Carousel<CarbonCarouselData>
+                        data={exampleEcoCarouselData}
+                        renderCard={(item, idx) => <CarbonCard data={item} key={idx} />}
+                    />
+                </div>
+                <div className='mt-6'>
+                    <FeatureCardGroup />
+                </div>
+                <div className='h-6' />
+            </motion.div>
+        </motion.div>
     )
 }
 
@@ -39,8 +50,6 @@ function Home() {
     const [isAnalyzing, setIsAnalyzing] = useState(true);
     const [progress, setProgress] = useState(0);
     const [isComplete, setIsComplete] = useState(false);
-    const [showCheck, setShowCheck] = useState(false);
-    const [showAnalyzing, setShowAnalyzing] = useState(true);
     const pollingRef = useRef<number | null>(null);
 
     const navigate = useNavigate();
@@ -119,22 +128,12 @@ function Home() {
         };
     }, [userId, navigate]);
 
-    // analyzing → false로 바뀌면 0.5초 후 analyzing 화면 제거
-    useEffect(() => {
-        if (!isAnalyzing) {
-            const timeout = setTimeout(() => setShowAnalyzing(false), 500);
-            return () => clearTimeout(timeout);
-        } else {
-            setShowAnalyzing(true);
-        }
-    }, [isAnalyzing]);
-
     return (
         <GlobalContainer>
             <Navbar mode='home' />
             <div className='relative'>
-                <div className={`transition-all duration-500`}>
-                    <HomeLayout isAnalyzing={isAnalyzing} progress={progress} isComplete={isComplete} showCheck={showCheck} />
+                <div className={`transition-all duration-500 mx-4`}>
+                    <HomeLayout isAnalyzing={isAnalyzing} progress={progress} isComplete={isComplete} />
                 </div>
             </div>
         </GlobalContainer>

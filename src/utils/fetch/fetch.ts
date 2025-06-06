@@ -69,8 +69,29 @@ export default function Fetch() {
     url: string,
     body?: Record<string, K>
   ): Promise<T> => {
+    console.log("PUT : ", url);
     const response = await fetch(`${baseURL}${url}`, {
       method: "PUT",
+      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`${response.status}-${response.statusText}`);
+    }
+
+    return response.json();
+  };
+
+  const del = async <T, K>(
+    url: string,
+    body?: Record<string, K>
+  ): Promise<T> => {
+    console.log("DELETE : ", url);
+    const response = await fetch(`${baseURL}${url}`, {
+      method: "DELETE",
       body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json",
@@ -88,11 +109,17 @@ export default function Fetch() {
     get,
     post,
     put,
+    del,
   };
 }
 
-const { get, post, put } = Fetch();
-export { get as getFetch, post as postFetch, put as putFetch };
+const { get, post, put, del } = Fetch();
+export {
+  get as getFetch,
+  post as postFetch,
+  put as putFetch,
+  del as deleteFetch,
+};
 
 // 발신자별 메일 개수 조회 API
 export function getSenderCounts<T>(
