@@ -6,6 +6,7 @@ import TitleText from './TitleText';
 import { useUserStore } from '../../store/userStore';
 import { useNavigate } from 'react-router-dom';
 import useUser from '../../hooks/useUser';
+import { History as LucideHistory, Plus as LucidePlus } from 'lucide-react';
 
 function LogoutIcon({ size = 24 }: { size?: number }) {
     return (
@@ -17,12 +18,14 @@ function LogoutIcon({ size = 24 }: { size?: number }) {
     );
 }
 
-export type NavbarMode = 'home' | 'recommend';
+export type NavbarMode = 'home' | 'recommend' | 'gpt';
 
 interface NavbarProps {
     mode: NavbarMode;
     onBack?: () => void;
     title?: string;
+    onHistory?: () => void;
+    onNewChat?: () => void;
 }
 
 function HomeNavbar() {
@@ -59,18 +62,54 @@ function SortNavbar({ onBack, title }: { onBack?: () => void; title: string; }) 
     );
 }
 
-export function Navbar({ mode, onBack, title }: NavbarProps) {
+function HistoryIcon({ size = 24 }: { size?: number }) {
+    return <LucideHistory size={size} />;
+}
+
+function NewChatIcon({ size = 24 }: { size?: number }) {
+    return <LucidePlus size={size} />;
+}
+
+function GPTNavbar({ onBack, title, onHistory, onNewChat }: {
+    onBack?: () => void;
+    title: string;
+    onHistory?: () => void;
+    onNewChat?: () => void;
+}) {
+    return (
+        <div className='flex flex-row justify-between items-center w-full px-4 py-2'>
+            <div className='flex flex-row items-center' onClick={onBack}>
+                <button className='mr-2'>
+                    <BackIcon />
+                </button>
+                <h1 className='text-2xl font-bold'>{title}</h1>
+            </div>
+            <div className='flex flex-row items-end gap-2'>
+                <button onClick={onNewChat} className='mr-2'>
+                    <NewChatIcon />
+                </button>
+                <button onClick={onHistory}>
+                    <HistoryIcon />
+                </button>
+            </div>
+        </div>
+    );
+}
+
+export function Navbar({ mode, onBack, title, onHistory, onNewChat }: NavbarProps) {
     switch (mode) {
         case 'recommend':
             return <SortNavbar onBack={onBack} title={title || ''} />;
         case 'home':
             return <HomeNavbar />
+        case 'gpt':
+            return <GPTNavbar onBack={onBack} title={title || ''} onHistory={onHistory} onNewChat={onNewChat} />;
         default:
             return <HomeNavbar />;
     }
 }
 
-export function NavbarContainer({ mode, onBack, title = '' }: NavbarProps) {
+export function NavbarContainer({ mode, onBack, title = '', onHistory = () => { }, onNewChat = () => { } }: NavbarProps) {
     return (
         <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -80,7 +119,7 @@ export function NavbarContainer({ mode, onBack, title = '' }: NavbarProps) {
                 exit={{ opacity: 0, x: -40 }}
                 transition={{ duration: 0.25 }}
             >
-                <Navbar mode={mode} onBack={onBack} title={title} />
+                <Navbar mode={mode} onBack={onBack} title={title} onHistory={onHistory} onNewChat={onNewChat} />
             </motion.div>
         </AnimatePresence>
     );
