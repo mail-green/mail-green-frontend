@@ -1,5 +1,9 @@
 import { postFetch } from "./fetch";
-import type { ChatMessage } from "../../types/gptChat";
+import type {
+  ChatMessage,
+  GptFunctionName,
+  GptApiResult,
+} from "../../types/gptChat";
 
 // 질문을 보내고, 답변(ChatMessage)을 받는 함수
 export async function askGpt(
@@ -24,20 +28,32 @@ export async function askGpt(
     };
   }
 
-  const aiRes = res.ai_response as any;
-  const contentArr = Array.isArray(aiRes?.content)
-    ? aiRes.content
-    : [aiRes?.content];
+  const aiRes = res.ai_response as Record<string, unknown> & {
+    content?: unknown;
+  };
+  const contentArr: Array<{ type: string; text?: string; name?: string }> =
+    Array.isArray(aiRes?.content)
+      ? (aiRes.content as Array<{ type: string; text?: string; name?: string }>)
+      : aiRes.content
+      ? [aiRes.content as { type: string; text?: string; name?: string }]
+      : [];
 
-  const textObj = contentArr.find((c: any) => c?.type === "text");
-  const toolObj = contentArr.find((c: any) => c?.type === "tool_use");
+  const textObj = contentArr.find((c) => c?.type === "text");
+  const toolObj = contentArr.find((c) => c?.type === "tool_use");
+
+  // functionName이 명확히 없으면 result도 null로
+  const functionName = toolObj?.name as GptFunctionName | undefined;
+  let result: GptApiResult = null;
+  if (functionName && "result" in res) {
+    result = (res as { result?: GptApiResult }).result ?? null;
+  }
 
   return {
-    id: aiRes?.id || "",
+    id: typeof aiRes.id === "string" ? aiRes.id : "",
     role: "gpt",
     content: textObj?.text || "",
     createdAt: new Date().toISOString(),
-    functionName: toolObj?.name,
-    result: (res as any).result ?? null,
+    functionName,
+    result,
   };
 }

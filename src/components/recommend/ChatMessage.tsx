@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import type { ChatMessage, MarkImportantResult, ReadMailResult, DeleteMailResult, SearchMailResult, UnsubscribeMailResult } from '../../types/gptChat';
+import type { ChatMessage, MarkImportantResult, ReadMailResult, DeleteMailResult, SearchMailResult, UnsubscribeMailResult, GptFunctionName } from '../../types/gptChat';
 
 interface Props {
     message: ChatMessage;
     onExpandMailList?: (mails: SearchMailResult) => void;
 }
 
-function renderResult(result: ChatMessage['result'], functionName?: string, onExpandMailList?: (mails: SearchMailResult) => void) {
+function renderResult(result: ChatMessage['result'], functionName?: GptFunctionName, onExpandMailList?: (mails: SearchMailResult) => void) {
     if (!result) return null;
     switch (functionName) {
         case 'search_mail': {
@@ -81,7 +81,7 @@ function renderResult(result: ChatMessage['result'], functionName?: string, onEx
             );
         }
         default:
-            return null;
+            return <div style={{ color: 'gray' }}>지원하지 않는 기능이거나, 결과 파싱에 실패했습니다.</div>;
     }
 }
 
