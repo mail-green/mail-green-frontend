@@ -9,6 +9,7 @@ import useUser from '../../hooks/useUser';
 import SubscribeMailCardGroupList from '../../components/subscribe/SubscribeMailCardGroupList';
 import UnsubscribeBottomSheet from '../../components/subscribe/UnsubscribeBottomSheet';
 import type { Subscription } from '../../types/subscription';
+import Loading from '../../components/common/Loading';
 
 const Subscribe = () => {
     const navigate = useNavigate();
@@ -57,7 +58,7 @@ const Subscribe = () => {
                 }} />
             <div className='mt-6 px-4'>
                 {isLoading ? (
-                    <div className='text-center text-gray-400 py-8'>로딩중...</div>
+                    <Loading />
                 ) : filtered.length === 0 ? (
                     <div className='text-center text-gray-500'>구독자가 없습니다.</div>
                 ) : (
