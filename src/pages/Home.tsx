@@ -131,26 +131,15 @@ function Home() {
     // 진행상황 조회 함수
     const getProgress = async () => {
         const res = await getFetch<{ in_progress: boolean; progress_pct: number; status: string }>(
-            '/mail',
+            '/mail/progress',
             { user_id: userId }
         );
         const { in_progress, progress_pct, status } = res;
 
         setProgress(progress_pct);
-        setIsAnalyzing(status === "pending");
-        if (status && (status == "done" || status == "failed")) {
-            setIsComplete(true);
-            return true;
-
-        } else {
-            if (in_progress === false && progress_pct === 0) {
-                setIsComplete(true);
-                return true;
-            } else {
-                setIsComplete(false);
-                return false;
-            }
-        }
+        setIsAnalyzing(in_progress);
+        setIsComplete(status === "done" || status === "failed");
+        return status === "done" || status === "failed";
     };
 
     // polling 관리 useEffect
@@ -183,7 +172,7 @@ function Home() {
                     clearInterval(pollingRef.current!);
                     pollingRef.current = null;
                 }
-            }, 100000);
+            }, 2000);
         }
 
         // 언마운트 시 polling 해제
