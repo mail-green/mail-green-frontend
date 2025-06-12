@@ -22,7 +22,7 @@ interface MailItem {
     received_at: string;
     is_read: boolean;
     isDeleted: boolean;
-    isImportant: boolean;
+    starred: boolean;
 }
 
 // 날짜별 그룹핑 함수 (Sender와 동일)
@@ -72,16 +72,18 @@ const Keyword = () => {
             { ...getFilterParams(user.id, filterList || [], keyword), topic_id }
         ),
         select: (data) => {
-            return data.map(mail => ({ ...mail, isDeleted: false, isImportant: mail.isImportant ?? false }));
+            console.log(data);
+            return data.map(mail => ({ ...mail, isDeleted: false }));
         },
         enabled: !!topic_id,
     });
 
     // 삭제/보관 상태 관리
     const [mails, setMails] = useState<MailItem[]>([]);
+
     useEffect(() => {
         if (result) {
-            setMails(result.map(mail => ({ ...mail, isDeleted: false, isImportant: mail.isImportant })));
+            setMails(result.map(mail => ({ ...mail, isDeleted: false })));
         }
     }, [result]);
 
@@ -133,10 +135,12 @@ const Keyword = () => {
 
     // 삭제 버튼 클릭 시 (confirm: false)
     const handleDeleteRequest = () => {
+
         const selectedIds = mails.filter(m => m.isDeleted).map(m => m.id);
+
         if (selectedIds.length === 0) return;
         setPendingDeleteIds(selectedIds);
-        const hasImportant = mails.some(m => m.isDeleted && m.isImportant);
+        const hasImportant = mails.some(m => m.isDeleted && m.starred);
         setHasImportantInDelete(hasImportant);
         deleteMutation.mutate({ messageIds: selectedIds, confirm: false });
         setShowConfirmModal(true);
@@ -150,7 +154,7 @@ const Keyword = () => {
     // SuccessModal 닫기 시
     const handleSuccessClose = () => {
         setShowSuccessModal(false);
-        setMails(mails => mails.map(m => ({ ...m, isDeleted: false })));
+        setMails(mails => mails.map(m => ({ ...m, isDeleted: false, starred: m.starred })));
         setPendingDeleteIds([]);
         setHasImportantInDelete(false);
         queryClient.invalidateQueries({ queryKey: ['mailKeyword'] });
@@ -163,13 +167,13 @@ const Keyword = () => {
         const userId = user.id;
         setImportantLoadingId(id);
         try {
-            if (!mail.isImportant) {
+            if (!mail.starred) {
                 await postFetch(`/mail/${id}/star?user_id=${userId}`);
-                setMails((prev) => prev.map((m) => m.id === id ? { ...m, isImportant: true } : m));
+                setMails((prev) => prev.map((m) => m.id === id ? { ...m, starred: true } : m));
                 setToast('중요 메일로 등록되었습니다.');
             } else {
                 await deleteFetch(`/mail/${id}/star?user_id=${userId}`);
-                setMails((prev) => prev.map((m) => m.id === id ? { ...m, isImportant: false } : m));
+                setMails((prev) => prev.map((m) => m.id === id ? { ...m, starred: false } : m));
                 setToast('중요 메일이 해제되었습니다.');
             }
         } catch {
@@ -225,13 +229,13 @@ const Keyword = () => {
                                             {mail.isDeleted ? '보관' : '삭제'}
                                         </button>
                                         <button
-                                            className={`flex-1 flex-row py-2 rounded-lg font-bold border transition ${mail.isImportant ? 'bg-yellow-400 text-yellow-900 border-yellow-400' : 'bg-yellow-100 text-yellow-600 border-yellow-200'}`}
+                                            className={`flex-1 flex-row py-2 rounded-lg font-bold border transition ${mail.starred ? 'bg-yellow-400 text-yellow-900 border-yellow-400' : 'bg-yellow-100 text-yellow-600 border-yellow-200'}`}
                                             onClick={() => handleImportantToggle(mail.id)}
                                             disabled={importantLoadingId === mail.id}
                                         >
                                             {importantLoadingId === mail.id
-                                                ? <LoadingSmall color={mail.isImportant ? '#FEF08A' : '#FACC15'} />
-                                                : <span role="img" aria-label="star">{mail.isImportant ? '★ 중요' : '☆ 중요'}</span>}
+                                                ? <LoadingSmall color={mail.starred ? '#FEF08A' : '#FACC15'} />
+                                                : <span role="img" aria-label="star">{mail.starred ? '★ 중요' : '☆ 중요'}</span>}
                                         </button>
                                     </div>
                                 </div>

@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Home from './pages/Home';
-import RecommendAI from './pages/recommend/AI';
+import RecommendSubscribe from './pages/recommend/Subscribe';
 import RecommendKeyword from './pages/recommend/Keyword';
 import RecommendSender from './pages/recommend/Sender';
 import RecommendGPT from './pages/recommend/GPT';
@@ -17,7 +17,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/login/success" element={<LoginSuccessPage />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/recommend/ai" element={<RecommendAI />} />
+        <Route path="/recommend/subscribe" element={<RecommendSubscribe />} />
         <Route path="/recommend/keyword" element={<RecommendKeyword />} />
         <Route path="/recommend/sender" element={<RecommendSender />} />
         <Route path="/recommend/gpt" element={<RecommendGPT />} />

@@ -1,6 +1,6 @@
 import type { FeatureCardData } from "../components/home/feature/FeatureCard";
 
-export type CardType = "ai" | "keyword" | "sender" | "gpt";
+export type CardType = "keyword" | "sender" | "subscribe" | "gpt";
 
 export const featureCardList: FeatureCardData[] = [
   {
@@ -24,11 +24,11 @@ export const featureCardList: FeatureCardData[] = [
   {
     bgColor: "rgba(167, 203, 255, 0.1)", // 10% 투명도
     textColor: "#A7CBFF",
-    title: "AI로 정리하기",
-    description: "삭제 기록을 바탕으로\nAI로 정리해보세요!",
-    buttonText: "AI로 정리하러 가기",
-    url: "/recommend/ai",
-    type: "ai",
+    title: "구독 정리하기",
+    description: "구독 메일을 확인하고 정리해보세요!",
+    buttonText: "구독 정리하러 가기",
+    url: "/recommend/subscribe",
+    type: "subscribe",
   },
   {
     bgColor: "rgba(167, 203, 255, 0.1)",

@@ -85,10 +85,7 @@ export default function Fetch() {
     return response.json();
   };
 
-  const del = async <T, K>(
-    url: string,
-    body?: Record<string, K>
-  ): Promise<T> => {
+  const del = async <T, K>(url: string, body?: K): Promise<T> => {
     console.log("DELETE : ", url);
     const response = await fetch(`${baseURL}${url}`, {
       method: "DELETE",

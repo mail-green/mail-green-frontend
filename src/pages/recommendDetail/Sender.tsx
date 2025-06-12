@@ -15,7 +15,6 @@ import BottomSheet from '../../components/common/BottomSheet';
 import SuccessModal from '../../components/common/SuccessModal';
 import autoAnimate from '@formkit/auto-animate';
 import { AnimatePresence, motion } from 'framer-motion';
-// import { Trash2, Globe } from 'lucide-react';
 
 // 메일 데이터 타입
 interface MailItem {
@@ -25,7 +24,7 @@ interface MailItem {
     received_at: string;
     is_read: boolean;
     isDeleted: boolean;
-    isImportant: boolean;
+    starred: boolean;
 }
 
 // 날짜별 그룹핑 함수
@@ -49,14 +48,17 @@ function groupByDate(mails: MailItem[]) {
 }
 
 const Sender = () => {
+
     const navigate = useNavigate();
     const location = useLocation();
-    const { sender, name, filterList: initialFilterList } = location.state || {};
     const user = useUser();
-    // 검색어, 필터 상태 관리
+    const queryClient = useQueryClient();
+
+    const { sender, name, filterList: initialFilterList } = location.state || {};
+
     const [keyword, setKeyword] = useState('');
     const [filterList, setFilterList] = useState<FilterList>(initialFilterList || initialFilterData);
-    const queryClient = useQueryClient();
+
     const [showConfirmModal, setShowConfirmModal] = useState(false); // 삭제 확인 모달
     const [showSuccessModal, setShowSuccessModal] = useState(false); // 삭제 성공 모달
     const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([]); // 삭제할 id 목록
@@ -82,7 +84,7 @@ const Sender = () => {
             { ...getFilterParams(user.id, filterList || [], keyword), sender }
         ),
         select: (data) => {
-            return data.map(mail => ({ ...mail, isDeleted: false, isImportant: false }));
+            return data.map(mail => ({ ...mail, isDeleted: false }));
         },
         enabled: !!sender,
     });
@@ -91,17 +93,17 @@ const Sender = () => {
     const [mails, setMails] = useState<MailItem[]>([]);
     useEffect(() => {
         if (result) {
-            setMails(result.map(mail => ({ ...mail, isDeleted: false, isImportant: mail.isImportant })));
+            setMails(result.map(mail => ({ ...mail, isDeleted: false })));
         }
     }, [result]);
 
     // 삭제 API mutation
     const deleteMutation = useMutation({
-        mutationFn: async ({ messageIds, confirm }: { messageIds: string[]; confirm: boolean }) => {
+        mutationFn: async ({ messageIds, confirm, delete_protected_sender }: { messageIds: string[]; confirm: boolean, delete_protected_sender: boolean }) => {
             return await deleteFetch(`/mail/trash?user_id=${user.id}`, {
                 message_ids: messageIds,
                 confirm,
-                delete_protected_sender: false
+                delete_protected_sender
             });
         },
         onSuccess: (_data, variables) => {
@@ -118,20 +120,25 @@ const Sender = () => {
     });
 
     // 삭제 버튼 클릭 시 (confirm: false)
-    const handleDeleteRequest = () => {
+    const handleDeleteRequest = async () => {
         const selectedIds = mails.filter(m => m.isDeleted).map(m => m.id);
         if (selectedIds.length === 0) return;
         setPendingDeleteIds(selectedIds);
-        // 중요 메일 포함 여부 확인
-        const hasImportant = mails.some(m => m.isDeleted && m.isImportant);
-        setHasImportantInDelete(hasImportant);
-        deleteMutation.mutate({ messageIds: selectedIds, confirm: false });
-        setShowConfirmModal(true);
+        const hasImportant = mails.some(m => m.isDeleted && m.starred);
+        const result = await deleteMutation.mutateAsync({ messageIds: selectedIds, confirm: false, delete_protected_sender: hasImportant });
+
+        if (result) {
+            const protectedIds = result?.protected_ids ?? [];
+            if (protectedIds && protectedIds.length > 0) {
+                setHasImportantInDelete(true);
+            }
+            setShowConfirmModal(true);
+        }
     };
 
     // 모달에서 '닫기'(=실제 삭제) 클릭 시 (confirm: true)
     const handleConfirmDelete = () => {
-        deleteMutation.mutate({ messageIds: pendingDeleteIds, confirm: true });
+        deleteMutation.mutate({ messageIds: pendingDeleteIds, confirm: true, delete_protected_sender: hasImportantInDelete });
     };
 
     // SuccessModal 닫기 시
@@ -159,13 +166,13 @@ const Sender = () => {
         const userId = user.id;
         setImportantLoadingId(id); // 로딩 시작
         try {
-            if (!mail.isImportant) {
+            if (!mail.starred) {
                 await postFetch(`/mail/${id}/star?user_id=${userId}`);
-                setMails((prev) => prev.map((m) => m.id === id ? { ...m, isImportant: true } : m));
+                setMails((prev) => prev.map((m) => m.id === id ? { ...m, starred: true } : m));
                 setToast('중요 메일로 등록되었습니다.');
             } else {
                 await deleteFetch(`/mail/${id}/star?user_id=${userId}`);
-                setMails((prev) => prev.map((m) => m.id === id ? { ...m, isImportant: false } : m));
+                setMails((prev) => prev.map((m) => m.id === id ? { ...m, starred: false } : m));
                 setToast('중요 메일이 해제되었습니다.');
             }
         } catch {
@@ -263,13 +270,13 @@ const Sender = () => {
                                                 {mail.isDeleted ? '보관' : '삭제'}
                                             </button>
                                             <button
-                                                className={`flex-1 flex-row py-2 rounded-lg font-bold border transition ${mail.isImportant ? 'bg-yellow-400 text-yellow-900 border-yellow-400' : 'bg-yellow-100 text-yellow-600 border-yellow-200'}`}
+                                                className={`flex-1 flex-row py-2 rounded-lg font-bold border transition ${mail.starred ? 'bg-yellow-400 text-yellow-900 border-yellow-400' : 'bg-yellow-100 text-yellow-600 border-yellow-200'}`}
                                                 onClick={() => handleImportantToggle(mail.id)}
                                                 disabled={importantLoadingId === mail.id}
                                             >
                                                 {importantLoadingId === mail.id
-                                                    ? <LoadingSmall color={mail.isImportant ? '#FEF08A' : '#FACC15'} />
-                                                    : <span role="img" aria-label="star">{mail.isImportant ? '★ 중요' : '☆ 중요'}</span>}
+                                                    ? <LoadingSmall color={mail.starred ? '#FEF08A' : '#FACC15'} />
+                                                    : <span role="img" aria-label="star">{mail.starred ? '★ 중요' : '☆ 중요'}</span>}
                                             </button>
                                         </div>
                                     </div>
@@ -317,12 +324,13 @@ const Sender = () => {
                         <div className="bg-green-50 rounded-full w-14 h-14 flex items-center justify-center mb-4">
                             <LeafIcon className="w-8 h-8 text-green-500" />
                         </div>
-                        {hasImportantInDelete && (
+                        {hasImportantInDelete ? (
                             <div className="text-red-500 font-bold mb-2">
                                 ⚠️ 중요한 메일이 포함되어 있습니다. 정말 삭제하시겠어요?
                             </div>
+                        ) : (
+                            <div className="font-bold text-lg mb-2">정말 삭제하시겠어요?</div>
                         )}
-                        <div className="font-bold text-lg mb-2">정말 삭제하시겠어요?</div>
                         <div className="text-sm mb-6">
                             선택한 메일 {pendingDeleteIds.length}개를 삭제합니다.<br />
                             예상 탄소 절감량: <span className="text-green-600 font-bold">{carbonSaved}g CO₂</span>
