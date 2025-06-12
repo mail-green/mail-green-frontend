@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { NavbarContainer } from '../../components/common/navbar';
 import GlobalContainer from '../../container/GlobalContainer';
 import { useNavigate } from 'react-router-dom';
-import SearchBar from '../../components/common/SearchBar';
 import { useSubscriptions } from '../../hooks/api/useSubscriptions';
 import { useUnsubscribe } from '../../hooks/api/useUnsubscribe';
 import useUser from '../../hooks/useUser';
@@ -14,7 +13,7 @@ import Loading from '../../components/common/Loading';
 const Subscribe = () => {
     const navigate = useNavigate();
     const user = useUser();
-    const [keyword, _] = useState('');
+    const [keyword] = useState('');
     const [selected, setSelected] = useState<Subscription | null>(null);
     const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
 
