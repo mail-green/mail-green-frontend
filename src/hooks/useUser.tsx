@@ -1,11 +1,11 @@
-import React from 'react'
+import { useMemo } from 'react';
 
 const useUser = () => {
     const userStr = localStorage.getItem('user');
-    if (!userStr) {
-        return null;
-    }
-    return JSON.parse(userStr);
+    return useMemo(() => {
+        if (!userStr) return null;
+        return JSON.parse(userStr);
+    }, [userStr]);
 }
 
 export default useUser

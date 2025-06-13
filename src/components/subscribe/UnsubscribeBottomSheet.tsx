@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-// LeafIcon, Loading 컴포넌트가 이미 있다면 import, 없으면 주석 처리
+import { useEffect, useState } from 'react';
+
 import LeafIcon from '../common/LeafIcon';
 import Loading from '../common/Loading';
 
@@ -12,6 +12,7 @@ interface Props {
 }
 
 export default function UnsubscribeBottomSheet({ open, onClose, onConfirm, name, isLoading }: Props) {
+
     const [visible, setVisible] = useState(open);
     const [animate, setAnimate] = useState(false);
 
