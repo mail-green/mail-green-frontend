@@ -39,7 +39,7 @@ export default function ChatInput({ value, onChange, onSend, disabled }: Props) 
             <button
                 onClick={onSend}
                 disabled={disabled || !input.trim()}
-                style={{ borderRadius: 8, padding: '8px 16px', background: '#198754', color: '#fff', border: 'none' }}
+                style={{ borderRadius: 8, padding: '8px 16px', background: '#8fd694', color: '#fff', border: 'none' }}
             >
                 전송
             </button>

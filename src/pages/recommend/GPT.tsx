@@ -85,7 +85,7 @@ function RecommendGPT() {
                     <ChatHistory history={currentSession.history} loading={loading} />
                 </div>
 
-                <div className="sticky bottom-0 z-10">
+                <div className="sticky bottom-0 z-10 mx-4">
                     <ChatInput
                         value={input}
                         onChange={setInput}

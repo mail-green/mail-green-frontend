@@ -27,7 +27,7 @@ const ChatSessionDialog = ({ open, onClose, sessions, currentSessionId, switchSe
                         <div key={s.id} className="flex items-center w-full gap-1">
                             <button
                                 onClick={() => { switchSession(s.id); onClose(); }}
-                                className={`rounded-lg border ${s.id === currentSessionId ? 'border-[#198754] border-[1px] bg-[#e9f7ef]' : 'border-[#ccc] border bg-white'} text-[#222] px-2 py-1 font-medium text-base cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1`}
+                                className={`rounded-lg border ${s.id === currentSessionId ? 'border-[#8fd694] border-[1px] bg-[#e9f7ef]' : 'border-[#ccc] border bg-white'} text-[#222] px-2 py-1 font-medium text-base cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis text-left flex-1`}
                             >
                                 {s.title}
                             </button>

@@ -66,6 +66,9 @@ const Sender = () => {
     const [toast, setToast] = useState<string | null>(null); // 토스트 메시지 상태
     const [importantLoadingId, setImportantLoadingId] = useState<string | null>(null); // 중요 변경 로딩 상태
 
+    const [carbonSaved, setCarbonSaved] = useState(0);
+    const [estimatedCarbonSaved, setEstimatedCarbonSaved] = useState(0);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setKeyword(e.target.value);
     };
@@ -103,12 +106,15 @@ const Sender = () => {
             return await deleteFetch(`/mail/trash?user_id=${user.id}`, {
                 message_ids: messageIds,
                 confirm,
-                delete_protected_sender
+                delete_protected_sender,
             });
         },
         onSuccess: (_data, variables) => {
             if (variables.confirm) {
                 // 실제 삭제 성공 시
+                if (_data?.estimated_carbon_saved_g) {
+                    setEstimatedCarbonSaved(_data?.estimated_carbon_saved_g);
+                }
                 setShowSuccessModal(true);
                 setShowConfirmModal(false);
                 setMails(mails => mails.filter(m => !pendingDeleteIds.includes(m.id)));
@@ -138,7 +144,7 @@ const Sender = () => {
 
     // 모달에서 '닫기'(=실제 삭제) 클릭 시 (confirm: true)
     const handleConfirmDelete = () => {
-        deleteMutation.mutate({ messageIds: pendingDeleteIds, confirm: true, delete_protected_sender: hasImportantInDelete });
+        deleteMutation.mutateAsync({ messageIds: pendingDeleteIds, confirm: true, delete_protected_sender: hasImportantInDelete });
     };
 
     // SuccessModal 닫기 시
@@ -147,6 +153,7 @@ const Sender = () => {
         setMails(mails => mails.map(m => ({ ...m, isDeleted: false })));
         setPendingDeleteIds([]);
         setHasImportantInDelete(false);
+        setEstimatedCarbonSaved(0);
         queryClient.invalidateQueries({ queryKey: ['mailSender'] });
     };
 
@@ -196,7 +203,11 @@ const Sender = () => {
 
     // 삭제 선택된 메일 개수
     const deletedCount = mails.filter((m) => m.isDeleted).length;
-    const carbonSaved = deletedCount * 4; // 예시: 1개당 4g
+
+    useEffect(() => {
+        setCarbonSaved(deletedCount * 4);
+    }
+        , [deletedCount]);
 
     // 토스트 메시지 자동 사라짐 (3초)
     useEffect(() => {
@@ -356,7 +367,7 @@ const Sender = () => {
                     open={showSuccessModal}
                     onClose={handleSuccessClose}
                     userName={user.name || ''}
-                    carbonSaved={carbonSaved}
+                    carbonSaved={estimatedCarbonSaved}
                 />
             </div>
         </GlobalContainer>

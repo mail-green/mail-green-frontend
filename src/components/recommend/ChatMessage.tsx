@@ -95,15 +95,15 @@ export default function ChatMessage({ message, onExpandMailList }: Props) {
             margin: '8px 0',
         }}>
             <div style={{
-                background: isUser ? 'linear-gradient(90deg, #d1e7dd 60%, #b6e2d3 100%)' : 'linear-gradient(90deg, #f8f9fa 60%, #e9ecef 100%)',
+                background: isUser ? '#8fd694' : 'linear-gradient(90deg, #f8f9fa 60%, #e9ecef 100%)',
                 color: '#222',
                 borderRadius: 16,
                 padding: '12px 18px',
                 maxWidth: '70%',
                 minWidth: 60,
                 wordBreak: 'break-all',
-                boxShadow: isUser ? '0 2px 8px #b6e2d355' : '0 2px 8px #e9ecef55',
-                border: isUser ? '1.5px solid #b6e2d3' : '1.5px solid #e9ecef',
+                boxShadow: isUser ? '0 2px 8px #8fd69455' : '0 2px 8px #e9ecef55',
+                border: isUser ? '1.5px solid #8fd694' : '1.5px solid #e9ecef',
                 position: 'relative',
                 transition: 'box-shadow 0.3s',
             }}>

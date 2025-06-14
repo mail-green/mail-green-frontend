@@ -101,7 +101,11 @@ const Keyword = () => {
 
     // 삭제 선택된 메일 개수
     const deletedCount = mails.filter((m) => m.isDeleted).length;
-    const carbonSaved = deletedCount * 4; // 예시: 1개당 4g
+    const [carbonSaved, setCarbonSaved] = useState(0);
+
+    useEffect(() => {
+        setCarbonSaved(deletedCount * 4);
+    }, [deletedCount]);
 
     // 삭제 확인 모달
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -110,6 +114,7 @@ const Keyword = () => {
     const [hasImportantInDelete, setHasImportantInDelete] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
     const [importantLoadingId, setImportantLoadingId] = useState<string | null>(null);
+    const [estimatedCarbonSaved, setEstimatedCarbonSaved] = useState(0);
     const queryClient = useQueryClient();
 
     // 삭제 API mutation
@@ -123,6 +128,9 @@ const Keyword = () => {
         },
         onSuccess: (_data, variables) => {
             if (variables.confirm) {
+                if (_data?.estimated_carbon_saved_g) {
+                    setEstimatedCarbonSaved(_data?.estimated_carbon_saved_g);
+                }
                 setShowSuccessModal(true);
                 setShowConfirmModal(false);
                 setMails(mails => mails.filter(m => !pendingDeleteIds.includes(m.id)));
@@ -157,6 +165,7 @@ const Keyword = () => {
         setMails(mails => mails.map(m => ({ ...m, isDeleted: false, starred: m.starred })));
         setPendingDeleteIds([]);
         setHasImportantInDelete(false);
+        setEstimatedCarbonSaved(0);
         queryClient.invalidateQueries({ queryKey: ['mailKeyword'] });
     };
 
@@ -215,8 +224,8 @@ const Keyword = () => {
                                         <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-lg mr-3">
                                             {mail.subject[0]}
                                         </div>
-                                        <div>
-                                            <div className="font-bold">{mail.subject}</div>
+                                        <div className="flex-1">
+                                            <div className="font-bold break-all">{mail.subject}</div>
                                             <div className="text-xs text-gray-500">{mail.is_read ? '읽음' : '안읽음'}</div>
                                         </div>
                                     </div>
@@ -329,7 +338,7 @@ const Keyword = () => {
                     open={showSuccessModal}
                     onClose={handleSuccessClose}
                     userName={user.name || ''}
-                    carbonSaved={carbonSaved}
+                    carbonSaved={estimatedCarbonSaved}
                 />
             </div>
         </GlobalContainer>
