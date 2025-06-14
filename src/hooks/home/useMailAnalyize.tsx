@@ -9,9 +9,9 @@ const useMailAnalyize = () => {
 
     const userId = useUser()?.id ?? '';
 
-    const [isAnalyzing, setIsAnalyzing] = useState(true);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-    const [isComplete, setIsComplete] = useState(false);
+    const [isComplete, setIsComplete] = useState(true);
 
     const pollingRef = useRef<number | null>(null);
 

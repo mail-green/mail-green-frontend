@@ -20,13 +20,13 @@ function HomeLayout() {
 
     useEffect(() => {
         if (!user) {
-            navigate('/');
+            navigate('/login', { replace: true });
         }
     }, [user]);
 
     // 탄소 정보 패칭
     const { carbonCarouselData, isCarbonLoading } = useFetchCarbonCarousel();
-    console.log(carbonCarouselData);
+
     // 분석 상태 패칭
     const { isAnalyzing, isComplete } = useMailAnalyize();
 
