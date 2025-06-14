@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import type { ChatMessage, MarkImportantResult, ReadMailResult, DeleteMailResult, SearchMailResult, UnsubscribeMailResult, GptFunctionName } from '../../types/gptChat';
+import type { ChatMessage, MarkImportantResult, ReadMailResult, SearchMailResult, UnsubscribeMailResult, GptFunctionName, GptMail } from '../../types/gptChat';
 
 interface Props {
     message: ChatMessage;
@@ -57,8 +57,29 @@ function renderResult(result: ChatMessage['result'], functionName?: GptFunctionN
             return <div>{count}개 메일을 읽음 처리했습니다.</div>;
         }
         case 'delete_mail': {
-            const { count } = result as DeleteMailResult;
-            return <div>{count}개 메일을 삭제했습니다.</div>;
+            const { count, mail_infos, deleted } = result as { count?: number; mail_infos?: GptMail[]; deleted?: string[] };
+            if (mail_infos && Array.isArray(mail_infos) && mail_infos.length > 0) {
+                const showCount = 3;
+                const shown = mail_infos.slice(0, showCount);
+                const rest = mail_infos.length - showCount;
+                return (
+                    <div>
+                        <b>{count}개 메일을 삭제했습니다.</b>
+                        <ul style={{ paddingLeft: 16, margin: 0 }}>
+                            {shown.map((mail) => (
+                                <li key={mail.id}>
+                                    {mail.subject} <span style={{ color: '#888' }}>({mail.sender})</span>
+                                    <span style={{ fontSize: 12, color: '#aaa', marginLeft: 4 }}>{mail.received_at ? `(${mail.received_at.slice(0, 10)})` : ''}</span>
+                                </li>
+                            ))}
+                        </ul>
+                        {rest > 0 && (
+                            <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>외 {rest}개</div>
+                        )}
+                    </div>
+                );
+            }
+            return <div>{count ?? (deleted?.length ?? 0)}개 메일을 삭제했습니다.</div>;
         }
         case 'unsubscribe_mail': {
             const { unsubscribed, failed, count } = result as UnsubscribeMailResult;
