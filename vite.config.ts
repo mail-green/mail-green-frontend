@@ -14,6 +14,14 @@ export default defineConfig({
       injectManifest: {
         swDest: "dist/sw.js",
       },
+      manifest: {
+        name: "GreenMail",
+        short_name: "GreenMail",
+        description: "GreenMail",
+        theme_color: "#ffffff",
+        background_color: "#ffffff",
+        display: "standalone",
+      },
     }),
   ],
 });

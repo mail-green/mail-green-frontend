@@ -9,8 +9,20 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 import useFetchCarbonCarousel from '../hooks/home/useFetchCarbonCarousel';
 import useMailAnalyize from '../hooks/home/useMailAnalyize';
+import useUser from '../hooks/useUser';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function HomeLayout() {
+
+    const user = useUser();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!user) {
+            navigate('/');
+        }
+    }, [user]);
 
     // 탄소 정보 패칭
     const { carbonCarouselData, isCarbonLoading } = useFetchCarbonCarousel();
