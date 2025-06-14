@@ -155,6 +155,7 @@ const Sender = () => {
         setHasImportantInDelete(false);
         setEstimatedCarbonSaved(0);
         queryClient.invalidateQueries({ queryKey: ['mailSender'] });
+        queryClient.invalidateQueries({ queryKey: ['carbonCarouselData', user.id] });
     };
 
     // 삭제/보관 토글
@@ -311,14 +312,14 @@ const Sender = () => {
                     style={{ maxWidth: 390, margin: '0 auto' }}
                 >
                     <div className="flex items-center justify-between bg-green-50 rounded-xl p-4 m-4 shadow-lg">
-                        <div>
+                        <div className="flex flex-col flex-1">
                             <b>메일 {deletedCount}개를 삭제해요!</b>
                             <div className="text-xs mt-1 flex items-center">
                                 <span className="mr-1">🌍</span>
                                 <span>예상 탄소 절감량 : <b className="text-main">{carbonSaved}g CO₂</b></span>
                             </div>
                         </div>
-                        <button className="bg-main text-white rounded-full p-3 ml-4" onClick={handleDeleteRequest}>
+                        <button className="bg-main text-white rounded-full w-12 h-12 flex items-center justify-center ml-4" onClick={handleDeleteRequest}>
                             <span role="img" aria-label="delete">🗑️</span>
                         </button>
                     </div>

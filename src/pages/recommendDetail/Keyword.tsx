@@ -136,7 +136,7 @@ const Keyword = () => {
                 setMails(mails => mails.filter(m => !pendingDeleteIds.includes(m.id)));
                 setPendingDeleteIds([]);
                 setHasImportantInDelete(false);
-                queryClient.invalidateQueries({ queryKey: ['mailKeyword'] });
+                queryClient.invalidateQueries({ queryKey: ['mailKeyword', user.id], refetchType: 'active' });
             }
         },
     });
@@ -167,6 +167,7 @@ const Keyword = () => {
         setHasImportantInDelete(false);
         setEstimatedCarbonSaved(0);
         queryClient.invalidateQueries({ queryKey: ['mailKeyword'] });
+        queryClient.invalidateQueries({ queryKey: ['carbonCarouselData', user.id] });
     };
 
     // 중요 토글
@@ -274,7 +275,7 @@ const Keyword = () => {
                                 <span>예상 탄소 절감량 : <b className="text-main">{carbonSaved}g CO₂</b></span>
                             </div>
                         </div>
-                        <button className="bg-main text-white rounded-full p-3 ml-4" onClick={handleDeleteRequest}>
+                        <button className="bg-main text-white rounded-full w-12 h-12 flex items-center justify-center ml-4" onClick={handleDeleteRequest}>
                             <span role="img" aria-label="delete">🗑️</span>
                         </button>
                     </div>

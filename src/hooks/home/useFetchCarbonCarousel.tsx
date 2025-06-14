@@ -21,6 +21,8 @@ const useFetchCarbonCarousel = () => {
         queryKey: ['carbonCarouselData', userId],
         queryFn: () => getCarbonInfo(userId),
         enabled: !!userId,
+        staleTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: true,
         select: (data) => transformData(data),
     });
 
