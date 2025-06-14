@@ -3,6 +3,7 @@ import type {
   ChatMessage,
   GptFunctionName,
   GptApiResult,
+  GptMail,
 } from "../../types/gptChat";
 
 // 질문을 보내고, 답변(ChatMessage)을 받는 함수
@@ -48,10 +49,44 @@ export async function askGpt(
     result = (res as { result?: GptApiResult }).result ?? null;
   }
 
+  // content 생성: delete_mail 등은 mail_infos가 있으면 요약 메시지로 대체
+  let content = textObj?.text || "";
+  if (
+    functionName === "delete_mail" &&
+    result &&
+    typeof result === "object" &&
+    result !== null &&
+    "mail_infos" in result &&
+    Array.isArray((result as { mail_infos?: GptMail[] }).mail_infos)
+  ) {
+    const mailInfos =
+      (result as { mail_infos?: GptMail[]; count?: number }).mail_infos ?? [];
+    const count =
+      (result as { mail_infos?: GptMail[]; count?: number }).count ??
+      mailInfos.length;
+    if (mailInfos.length > 0) {
+      const shown = mailInfos.slice(0, 3);
+      const rest = mailInfos.length - 3;
+      content =
+        `${count}개의 메일이 성공적으로 삭제되었습니다.\n\n` +
+        shown
+          .map(
+            (m) =>
+              `- ${m.subject} (${m.sender}, ${
+                m.received_at ? m.received_at.slice(0, 10) : ""
+              })`
+          )
+          .join("\n");
+      if (rest > 0) content += `\n외 ${rest}개`;
+    } else {
+      content = `${count}개의 메일이 성공적으로 삭제되었습니다.`;
+    }
+  }
+
   return {
     id: typeof aiRes.id === "string" ? aiRes.id : "",
     role: "gpt",
-    content: textObj?.text || "",
+    content,
     createdAt: new Date().toISOString(),
     functionName,
     result,
